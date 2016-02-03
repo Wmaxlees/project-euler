@@ -113,14 +113,16 @@
 (for ([i data])
   (set! split-data (append split-data (list (string-split i #rx" ")))))
 
-(define (construct-node row col)
-  (cond [(= row (- (length split-data) 1))
-         (node (list-ref (list-ref split-data row) col) 0 0)]
+(for ([i (in-range 0 (length split-data))])
+  (for ([j (in-range 0 (length (list-ref split-data i)))])
+    (set! split-data (list-set split-data i (list-set (list-ref split-data i) j (node (list-ref (list-ref split-data i) j) 0 0))))))
 
-        [else
-         (node (list-ref (list-ref split-data row) col) (construct-node (+ row 1) col) (construct-node (+ row 1) (+ col 1)))]))
+(for ([i (in-range 0 (- (length split-data) 1))])
+  (for ([j (in-range 0 (length (list-ref split-data i)))])
+    (set-node-left! (list-ref (list-ref split-data i) j) (list-ref (list-ref split-data (+ i 1)) j))
+    (set-node-right! (list-ref (list-ref split-data i) j) (list-ref (list-ref split-data (+ i 1)) (+ j 1)))))
 
-(define tree (construct-node 0 0))
+(define tree (list-ref (list-ref split-data 0) 0))
 
 (define (get-max-value node depth)
   (cond [(not (= (node-calc-value node) -1)) (node-calc-value node)]
@@ -133,4 +135,3 @@
                                    (+ (string->number (node-value node))
                                       (max (get-max-value (node-left node) (+ depth 1)) (get-max-value (node-right node) (+ depth 1)))))
               (node-calc-value node)]))
-         
